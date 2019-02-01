@@ -1,0 +1,49 @@
+body {
+    font-family: sans-serif;
+    font-size: 16px;
+
+    background-color: rgb(88, 88, 88);
+    min-height: 100vh;
+    margin: 0px;
+
+    border: 3px solid rgb(104, 100, 82)
+}
+
+#controlPanel {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: center;
+
+    width: 100%;
+    margin-bottom: 3%;
+}
+
+.cBtn {
+    padding: 12px;
+    color: rgba(78, 78, 78, 0.623);
+    font-weight: bold;
+    font-size: 1.4em;
+    cursor: pointer;
+    background-color: rgba(136, 136, 136, 0.8);
+    color: white;
+    border-radius: 20%;
+    padding: 2vw;
+}
+
+.cBtn:hover {
+    background-color: rgba(105, 105, 105, 0.904)
+}
+
+.cBtn:active {
+    background-color: rgb(31, 29, 30)
+}
+
+#notesContainer {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+}
