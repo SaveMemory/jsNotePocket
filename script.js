@@ -1,3 +1,114 @@
+document.querySelector("#addNewNote").addEventListener("click", () => {
+    Notepad.addNewNote();
+});
+window.addEventListener("resize", () => {
+    Notepad.onResize();
+});
+
+// obiekt notatnika
+let Notepad = {
+    noteContainer: document.querySelector("#notesContainer"),
+    notes: [],
+
+    noteDefaultColor: "yellow",
+
+    colorList: ["red", "green", "blue", "yellow"],
+
+    //dodawanie notatki
+    addNewNote: function () {
+        let date = new Date();
+        let dateString =
+            date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+        this.notes.push(
+            new Note(false, "", "", dateString, false, this.noteDefaultColor)
+        );
+        this.fillColumns();
+
+        Notepad.saveNotes();
+    },
+    savingInterval: {},
+    savingFrequency: 1500,
+
+    // zapisywanie notatek w local storage
+    saveNotes: function () {
+        let tmp = [];
+        this.notes.forEach(el => {
+            tmp.push(el.getData());
+        });
+        window.localStorage.notes = JSON.stringify(tmp);
+        console.log("Notes saved");
+    },
+    // ładowanie notatek z local storage
+    loadNotes: function () {
+        if (window.localStorage.notes) {
+            notesData = JSON.parse(window.localStorage.notes);
+            notesData.forEach(el => {
+                this.notes.push(
+                    new Note(true, el.title, el.content, el.date, el.pin, el.color)
+                );
+            });
+            this.createNoteColumns();
+        } else console.log("notes not found");
+    },
+    nCMinSize: 250, //Minimum size of NoteColumn
+    nColumns: [],
+    // tworzenie kolumn z notatkami
+    createNoteColumns: function () {
+        while (this.noteContainer.firstChild)
+            this.noteContainer.removeChild(this.noteContainer.firstChild);
+        this.nColumns = [];
+
+        let cNumber = parseInt(this.noteContainer.offsetWidth / this.nCMinSize); //Number of columns
+        let cSize = 100 / cNumber; //single column size
+
+        for (let i = 0; i < cNumber; i++) {
+            let newColumn = document.createElement("div");
+            newColumn.classList.add("noteColumn");
+            newColumn.style.width = cSize + "%";
+            this.noteContainer.appendChild(newColumn);
+            this.nColumns.push(newColumn);
+        }
+        this.fillColumns();
+    },
+
+    //wypełnianie kolumn
+    fillColumns: function () {
+        this.nColumns.forEach(el => {
+            while (el.firstChild) el.removeChild(el.firstChild);
+        });
+
+        let lowestColumn = () => {
+            let minIndex = 0;
+            let minHeight = this.nColumns[0].offsetHeight;
+
+            for (let i = 1; i < this.nColumns.length; i++) {
+                minIndex = this.nColumns[i].offsetHeight <= minHeight ? i : minIndex;
+            }
+
+            return minIndex;
+        };
+
+        this.notes.forEach(note => {
+            if (!note.pin && note.imported)
+                this.nColumns[lowestColumn()].appendChild(note.element);
+        });
+
+        this.notes.forEach(note => {
+            if (note.pin && note.imported)
+                this.nColumns[lowestColumn()].appendChild(note.element);
+        });
+
+        this.notes.forEach(note => {
+            if (!note.imported)
+                this.nColumns[lowestColumn()].appendChild(note.element);
+        });
+    },
+    onResize: function () {
+        let cNumber = parseInt(this.noteContainer.offsetWidth / this.nCMinSize);
+        if (cNumber != this.nColumns.length) this.createNoteColumns();
+    }
+};
+
 //konstruktor notatki
 let Note = function (importing, title, content, date, pin, color) {
     //ustawianie propek, tworzenie elementów html
