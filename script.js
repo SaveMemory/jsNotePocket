@@ -202,3 +202,87 @@ let Note = function (importing, title, content, date, pin, color) {
     this.optionsBar.classList.add("visible");
     this.deleteBtn.classList.add("visible");
 };
+
+// zapis notatki co określony czas (savingFrequency) przy
+Note.prototype.onEdit = function (e) {
+    this.isFocused = true;
+
+    Notepad.savingInterval = setInterval(() => {
+        Notepad.saveNotes();
+    }, Notepad.savingFrequency);
+};
+
+// zapis notatki po utracie focusa
+Note.prototype.onFocusOut = function (e) {
+    this.isFocused = false;
+
+    clearInterval(Notepad.savingInterval);
+    Notepad.saveNotes();
+};
+
+// pobieranie danych z notatki
+Note.prototype.getData = function () {
+    return {
+        title: this.title.innerHTML,
+        content: this.content.innerHTML,
+        date: this.noteDate.innerHTML,
+        pin: this.pin,
+        color: this.color
+    };
+};
+
+// przypinanie notatki
+Note.prototype.pinUnpin = function () {
+    if (this.pin) {
+        this.pin = false;
+        this.pinElement.classList.remove("active");
+    } else {
+        this.pin = true;
+        this.pinElement.classList.add("active");
+    }
+
+    Notepad.saveNotes();
+};
+
+// pokazywanie(tworzenie) menu do wyboru kolorów
+Note.prototype.setColorMenu = function () {
+    while (this.colorMenu.firstChild)
+        this.colorMenu.removeChild(this.colorMenu.firstChild);
+
+    Notepad.colorList.forEach(el => {
+        if (this.color != el) {
+            let colorOption = document.createElement("div");
+            colorOption.classList.add("colorOption", "opBtn", el);
+            colorOption.innerHTML = " ";
+            this.colorMenu.appendChild(colorOption);
+            colorOption.addEventListener("click", () => {
+                this.changeColor(el);
+            });
+        }
+    });
+};
+
+// zmiana koloru notatki
+Note.prototype.changeColor = function (newColor) {
+    this.colorElement.classList.remove(this.color);
+    this.element.classList.remove(this.color);
+    this.color = newColor;
+    this.colorElement.classList.add(this.color);
+    this.element.classList.add(this.color);
+    this.setColorMenu();
+
+    Notepad.saveNotes();
+};
+
+//usuwanie notatki
+Note.prototype.delete = function () {
+    let index = Notepad.notes.indexOf(this);
+    Notepad.notes.splice(index, 1);
+    this.element.parentElement.removeChild(this.element);
+    Notepad.fillColumns();
+
+    Notepad.saveNotes();
+};
+
+Notepad.createNoteColumns();
+Notepad.loadNotes();
